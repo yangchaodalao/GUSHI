@@ -1,0 +1,58 @@
+{
+  "skill_name": "daily-market-news",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "帮我生成今天的A股市场日报，包含新闻头条和股市数据",
+      "expected_output": "生成 A股市场日报_YYYY-MM-DD.md，包含：9个新闻来源（国务院/发改委/央行/财政部/证监会/财联社/人民日报/央视新闻/国际双通道）、四大指数涨跌幅、成交额、涨跌家数、涨停跌停、资金流向（北向+南向）、同花顺板块涨跌前5（行业+概念混排）、市场观察三标签（结构变化/资金行为/驱动因素）",
+      "files": ["A股市场日报_*.md"],
+      "assertions": [
+        {"name": "file_exists", "description": "日报文件已生成到指定目录"},
+        {"name": "has_section_news", "description": "包含「时政要闻」section，含9个子section（国务院/发改委/央行/财政部/证监会/财联社/人民日报/央视新闻/国际要闻）"},
+        {"name": "has_section_index", "description": "包含「主要指数」表格，含上证/深证/创业板/科创50"},
+        {"name": "has_section_market", "description": "包含「市场概况」表格，含成交额/涨跌家数/涨停跌停"},
+        {"name": "has_section_capital_flow", "description": "包含「资金流向」section，含北向（沪股通/深股通）和南向（沪港通/深港通）"},
+        {"name": "has_section_sectors", "description": "包含「板块涨跌榜（同花顺全部板块混排）」，涨幅前5+跌幅前5，含类型列（行业/概念）"},
+        {"name": "has_section_observation", "description": "包含「市场观察」section，含①②③三个标签化模块"},
+        {"name": "no_unreplaced_vars", "description": "报告中无 {{VARIABLE}} 占位符残留"},
+        {"name": "color_rule_correct", "description": "颜色规则正确：上涨用🔴，下跌用🟢"},
+        {"name": "loser_order_desc", "description": "跌幅榜按跌幅从大到小排列，跌幅最大的排第1"},
+        {"name": "news_links_are_site_limited", "description": "新闻链接来自官网域名（gov.cn/mof.gov.cn/csrc.gov.cn/cls.cn/cctv.com/cnbc.com等），非聚合站转载"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "今天A股怎么样？",
+      "expected_output": "触发 skill 生成当日市场日报（含交易日判断：工作日生成完整日报，休市日生成纯新闻日报+Obsidian双链）",
+      "files": ["A股市场日报_*.md"],
+      "assertions": [
+        {"name": "skill_triggered", "description": "skill 被正确触发（而非手动拼凑数据）"},
+        {"name": "file_exists", "description": "日报文件已生成"},
+        {"name": "trading_day_check", "description": "报告中体现了交易日判断（交易日有市场数据，休市日有🔴休市标注+双链）"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "大盘数据",
+      "expected_output": "触发 skill，生成包含全部市场数据的完整报告",
+      "files": ["A股市场日报_*.md"],
+      "assertions": [
+        {"name": "skill_triggered", "description": "skill 被正确触发"},
+        {"name": "has_market_data", "description": "包含股市数据（指数/成交额/涨跌家数/资金流向）"},
+        {"name": "has_news", "description": "包含时政新闻（9个来源，site:官网限定）"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "今天是周六，帮我生成今天的财经日报",
+      "expected_output": "触发 skill 休市日流程：搜索当天新闻，不含市场数据，包含 Obsidian 双链到上一交易日",
+      "files": ["A股市场日报_*.md"],
+      "assertions": [
+        {"name": "skill_triggered", "description": "skill 被正确触发"},
+        {"name": "is_non_trading", "description": "报告标注🔴休市"},
+        {"name": "has_news_only", "description": "只有时政新闻，不含市场数据（指数/成交额/板块排名等）"},
+        {"name": "has_obsidian_link", "description": "包含 [[A股市场日报_YYYY-MM-DD|上一交易日报告]] Obsidian双链"}
+      ]
+    }
+  ]
+}
