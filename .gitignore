@@ -1,3 +1,10 @@
 __pycache__/
 *.pyc
 .DS_Store
+node_modules/
+.obsidian/
+.claude/settings.local.json
+.claude/projects/
+.claude/worktrees/
+.claude/plugins/
+.claude/skills/daily-market-news/
